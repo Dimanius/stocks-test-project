@@ -1,16 +1,31 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { DxDataGridModule, DxChartModule, DxDateBoxModule, DxDropDownBoxModule, DxListModule } from 'devextreme-angular';
 import { AppComponent } from './app.component';
+import { StocksInfoComponent } from './stocks-info/stocks-info.component';
+import { AuthFinnhubInterceptor } from './auth-finnhub.interceptor';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { StocksService } from './stocks-info/services/stocks.service';
+import { StockCandlesStatusEnum } from './stocks-info/enums/stock-candles-status.enum';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    StocksInfoComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    HttpClientModule, 
+    DxDataGridModule,
+    DxChartModule,
+    DxDateBoxModule,
+    DxDropDownBoxModule,
+    DxListModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthFinnhubInterceptor, multi: true },
+    StocksService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

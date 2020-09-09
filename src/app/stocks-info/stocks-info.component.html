@@ -1,0 +1,104 @@
+<div class="stocks-container">
+    <div class="stocks-container__block">
+        <div class="stocks-container__sub-block">
+            <div class="filters-container">
+                <div class="filters-container__item">     
+                    <span>From date</span>
+                    <dx-date-box 
+                        id="from-date"
+                        (onValueChanged)="onDateChanged()"
+                        [(value)]="stockCandlesFilters.dateFrom">
+                    </dx-date-box>
+                </div>
+                <div class="filters-container__item">     
+                    <span>To date</span>
+                    <dx-date-box 
+                        id="to-date"
+                        (onValueChanged)="onDateChanged()"
+                        [(value)]="stockCandlesFilters.dateTo">
+                    </dx-date-box>
+                </div>
+                <div class="filters-container__item">     
+                    <span>Resolution</span>
+                    <dx-drop-down-box
+                        [(value)]="stockCandlesFilters.selectedResolution"
+                        [dataSource]="resolutions">
+                        <dx-list 
+                            [dataSource]="resolutions"
+                            selectionMode="single"
+                            (onSelectionChanged)="changeResolutionValue($event)">
+                        </dx-list>
+                    </dx-drop-down-box>
+                </div>
+            </div>
+            <dx-chart
+                id="chart"
+                title="Stock Price"
+                [dataSource]="stockCandlesList">
+                <dxi-series
+                    name="{{selectedStock}}"
+                    openValueField="o"
+                    highValueField="h"
+                    lowValueField="l"
+                    closeValueField="c">
+                    <dxo-reduction color="red"></dxo-reduction>
+                </dxi-series>
+                <dxo-common-series-settings
+                    argumentField="date"
+                    type="candlestick">
+                </dxo-common-series-settings>
+                <dxo-legend itemTextPosition="left"></dxo-legend>
+                <dxi-value-axis [tickInterval]="1">
+                    <dxo-title text="US dollars"></dxo-title>
+                    <dxo-label>
+                        <dxo-format
+                            type="currency"
+                            [precision]="0">
+                        </dxo-format>
+                    </dxo-label>
+                </dxi-value-axis>
+                <dxo-argument-axis [workdaysOnly]="true">
+                    <dxo-label format="shortDate"></dxo-label>
+                </dxo-argument-axis>
+                <dxo-tooltip
+                    [enabled]="true"
+                    location="edge"
+                    [customizeTooltip]="customizeTooltip">
+                </dxo-tooltip>
+            </dx-chart>
+        </div>
+        <div class="stocks-container__sub-block"></div>
+    </div>
+    <div class="stocks-container__block">
+        <dx-data-grid 
+            id="gridContainer"
+            [dataSource]="stocks.items"
+            [showBorders]="true"
+            (onSelectionChanged)="onStockChanged($event)"
+            [masterDetail]="{ enabled: true, template: 'detail' }"
+            >
+            <dxo-selection
+                mode="single">
+            </dxo-selection>
+            <div *dxTemplate="let stoke of 'detail'">
+                <div class="master-detail-caption">{{stoke.data.symbol + " " + "profile of the company:"}}</div>
+                <dx-data-grid 
+                    [dataSource]="getProfile(stoke.data.symbol)"
+                    [showBorders]="true"
+                    [columnAutoWidth]="true">
+                </dx-data-grid>       
+            </div>
+            <dxo-search-panel
+                [visible]="true"
+                [highlightCaseSensitive]="true"
+            ></dxo-search-panel>
+            <dxo-load-panel [enabled]="false"></dxo-load-panel>
+            <dxo-pager
+                [allowedPageSizes]="[10]"
+                [showNavigationButtons]="true">
+            </dxo-pager>
+            <!-- <dxo-scrolling mode="infinite"></dxo-scrolling> -->
+            <dxo-sorting mode="none"></dxo-sorting>
+        </dx-data-grid>
+    </div>
+</div>
