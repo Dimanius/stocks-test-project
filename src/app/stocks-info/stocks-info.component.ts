@@ -1,7 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { StocksService } from './services/stocks.service';
-import { ReplaySubject } from 'rxjs';
-import { takeUntil, take, delay } from 'rxjs/operators';
 import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
 
 @Component({
@@ -10,24 +8,23 @@ import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
   styleUrls: ['./stocks-info.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StocksInfoComponent implements OnInit, OnDestroy {
+export class StocksInfoComponent implements OnInit {
 
   public readonly resolutions = [1, 5, 15, 30, 60, "D", "W", "M" ];
 
   public stocks = {
     items: [],
-    profiles: []
+    profiles: [],
+    profilesDataSourceStorage: []
   }
   public selectedStock: string = null;
   
   public stockCandlesFilters: any;
   public stockCandlesList: any = [];
 
-  private _destroy: ReplaySubject<any> = new ReplaySubject<any>(1);
-
   constructor(
-    private _stocksService: StocksService, 
-    private _changeDetectionRef: ChangeDetectorRef
+    private stocksService: StocksService, 
+    private changeDetectionRef: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -37,32 +34,30 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
       selectedResolution: this.resolutions[0]
     };
 
-    this._stocksService.getStocks()
-      .pipe(takeUntil(this._destroy))
+    this.stocksService.getStocks()
       .subscribe((stocks) => {
         this.stocks.items = stocks;
-        this._changeDetectionRef.detectChanges();
-    });
+        this.changeDetectionRef.detectChanges();
+      });
   }
 
-  customizeTooltip(arg) {
+  customizeTooltip(arg): {text: string} {
     return {
-        text: "Open: $" + arg.openValue + "<br/>" +
-            "Close: $" + arg.closeValue + "<br/>" +
-            "High: $" + arg.highValue + "<br/>" +
-            "Low: $" + arg.lowValue + "<br/>"
+        text: "Open: $" + arg.openValue.toFixed(2) + "<br/>" +
+            "Close: $" + arg.closeValue.toFixed(2) + "<br/>" +
+            "High: $" + arg.highValue.toFixed(2) + "<br/>" +
+            "Low: $" + arg.lowValue.toFixed(2) + "<br/>"
     };
   }
 
   getStockCandles(): void {
     if (this.selectedStock) {
-      this._stocksService.getStockCandles(
+      this.stocksService.getStockCandles(
           this.selectedStock, 
           this.stockCandlesFilters.selectedResolution, 
           Math.floor(this.stockCandlesFilters.dateFrom / 1000), 
           Math.floor(this.stockCandlesFilters.dateTo / 1000)
         )
-        .pipe(takeUntil(this._destroy))
         .subscribe((stocks_candles) => {
           if (stocks_candles['s'] === StockCandlesStatusEnum.Ok) {
             this.stockCandlesList = stocks_candles['l'].map((item, i) => {
@@ -78,39 +73,17 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
           } else {
             this.stockCandlesList = [];
           }
-          this._changeDetectionRef.detectChanges();
+          this.changeDetectionRef.detectChanges();
       })
     }
   }
 
-  getProfile(symbol: string) {
-    // let item = this.tasksDataSourceStorage.find((i) => i.key === key);
-    //     if (!item) {
-    //         item = {
-    //             key: key,
-    //             dataSourceInstance: new DataSource({
-    //                 store: new ArrayStore({
-    //                     data: this.tasks,
-    //                     key: "ID"
-    //                 }),
-    //                 filter: ["EmployeeID", "=", key]
-    //             })
-    //         };
-    //         this.tasksDataSourceStorage.push(item)
-    //     }
-    //     return item.dataSourceInstance;
-    // let item = this._stocksService.getCompanyInfo(symbol).toPromise();
-    // console.log(item);
-    return null;    
-  }
-
-  changeResolutionValue(e: any) {
+  changeResolutionValue(e: any): void {
     this.stockCandlesFilters.selectedResolution = e.addedItems[0];
     this.getStockCandles();
-    this._changeDetectionRef.detectChanges();
   }
 
-  onDateChanged() {
+  onDateChanged(): void {
     this.getStockCandles();
   }
 
@@ -120,11 +93,6 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
           this.selectedStock = rowData.symbol;
           this.getStockCandles();
       }
-  }
-
-  ngOnDestroy(): void {
-    this._destroy.next(null);
-    this._destroy.complete();
   }
 
 }

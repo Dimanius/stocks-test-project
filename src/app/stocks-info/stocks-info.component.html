@@ -6,6 +6,7 @@
                     <span>From date</span>
                     <dx-date-box 
                         id="from-date"
+                        type="datetime"
                         (onValueChanged)="onDateChanged()"
                         [(value)]="stockCandlesFilters.dateFrom">
                     </dx-date-box>
@@ -14,6 +15,7 @@
                     <span>To date</span>
                     <dx-date-box 
                         id="to-date"
+                        type="datetime"
                         (onValueChanged)="onDateChanged()"
                         [(value)]="stockCandlesFilters.dateTo">
                     </dx-date-box>
@@ -81,12 +83,7 @@
                 mode="single">
             </dxo-selection>
             <div *dxTemplate="let stoke of 'detail'">
-                <div class="master-detail-caption">{{stoke.data.symbol + " " + "profile of the company:"}}</div>
-                <dx-data-grid 
-                    [dataSource]="getProfile(stoke.data.symbol)"
-                    [showBorders]="true"
-                    [columnAutoWidth]="true">
-                </dx-data-grid>       
+                <app-test-master-detail [symbol]="stoke.data.symbol"></app-test-master-detail>
             </div>
             <dxo-search-panel
                 [visible]="true"

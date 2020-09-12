@@ -9,10 +9,10 @@ export class StocksService {
   private static readonly URL_STOCK_CANDLES = "https://finnhub.io/api/v1/stock/candle"
   private static readonly URL_STOCK_COMPANY_INFO = "https://finnhub.io/api/v1/stock/profile2"
 
-  constructor(private _http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
   getStocks(): Observable<any> {
-    return this._http.get<any>(StocksService.URL_STOCK);
+    return this.http.get<any>(StocksService.URL_STOCK);
   }
 
   getStockCandles(symbol: string, resolution: string | number, from_date: number, to_date: number): Observable<any> {
@@ -23,7 +23,7 @@ export class StocksService {
       to: to_date.toString() 
     };
 
-    return this._http.get<any>(StocksService.URL_STOCK_CANDLES, {params: params});
+    return this.http.get<any>(StocksService.URL_STOCK_CANDLES, {params: params});
   }
 
   getCompanyInfo(symbol: string): Observable<any> {
@@ -31,7 +31,7 @@ export class StocksService {
       symbol: symbol,
     };
 
-    return this._http.get<any>(StocksService.URL_STOCK_COMPANY_INFO, {params: params});
+    return this.http.get<any>(StocksService.URL_STOCK_COMPANY_INFO, {params: params});
   }
 
 
