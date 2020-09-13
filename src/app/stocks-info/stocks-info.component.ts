@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { StocksService } from './services/stocks.service';
 import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
+import { Stock } from './models/stock';
 
 @Component({
   selector: 'app-test-stocks-info',
@@ -10,17 +11,36 @@ import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
 })
 export class StocksInfoComponent implements OnInit {
 
-  public readonly resolutions = [1, 5, 15, 30, 60, "D", "W", "M" ];
+  public readonly resolutions: {key: string, value: (string | number)}[] = [{
+    key: "1 minute",
+    value: 1
+  },{
+    key: "5 minutes",
+    value: 5
+  },{
+    key: "15 minutes",
+    value: 15
+  },{
+    key: "30 minutes",
+    value: 30
+  },{
+    key: "60 minutes",
+    value: 60
+  },{
+    key: "Day",
+    value: "D"
+  },{
+    key: "Week",
+    value: "W"
+  },{
+    key: "Month",
+    value: "M"
+  }];
 
-  public stocks = {
-    items: [],
-    profiles: [],
-    profilesDataSourceStorage: []
-  }
-  public selectedStock: string = null;
-  
+  public stocks: Stock[] = [];
+  public selectedStock: string = "None";
+  public stockCandlesList: ChartStockClanle[] = [];
   public stockCandlesFilters: any;
-  public stockCandlesList: any = [];
 
   constructor(
     private stocksService: StocksService, 
@@ -31,17 +51,17 @@ export class StocksInfoComponent implements OnInit {
     this.stockCandlesFilters = {
       dateFrom: Date.now(),
       dateTo: Date.now(),
-      selectedResolution: this.resolutions[0]
+      selectedResolution: this.resolutions[5].value
     };
 
     this.stocksService.getStocks()
       .subscribe((stocks) => {
-        this.stocks.items = stocks;
+        this.stocks = stocks;
         this.changeDetectionRef.detectChanges();
       });
   }
 
-  customizeTooltip(arg): {text: string} {
+  customizeTooltip(arg: any): {text: string} {
     return {
         text: "Open: $" + arg.openValue.toFixed(2) + "<br/>" +
             "Close: $" + arg.closeValue.toFixed(2) + "<br/>" +
@@ -59,16 +79,16 @@ export class StocksInfoComponent implements OnInit {
           Math.floor(this.stockCandlesFilters.dateTo / 1000)
         )
         .subscribe((stocks_candles) => {
-          if (stocks_candles['s'] === StockCandlesStatusEnum.Ok) {
-            this.stockCandlesList = stocks_candles['l'].map((item, i) => {
-              const obj = {
-                l: stocks_candles['l'][i],
-                h: stocks_candles['h'][i],
-                o: stocks_candles['o'][i],
-                c: stocks_candles['c'][i],
-                date: new Date(stocks_candles['t'][i]*1000)
+          if (stocks_candles.s === StockCandlesStatusEnum.Ok) {
+            this.stockCandlesList = stocks_candles.l.map((item, i) => {
+              const chartStockCandle: ChartStockClanle = {
+                l: stocks_candles.l[i],
+                h: stocks_candles.h[i],
+                o: stocks_candles.o[i],
+                c: stocks_candles.c[i],
+                date: new Date(stocks_candles.t[i]*1000)
               }
-              return obj;
+              return chartStockCandle;
             });
           } else {
             this.stockCandlesList = [];
@@ -79,7 +99,7 @@ export class StocksInfoComponent implements OnInit {
   }
 
   changeResolutionValue(e: any): void {
-    this.stockCandlesFilters.selectedResolution = e.addedItems[0];
+    this.stockCandlesFilters.selectedResolution = e.selectedItem.value;
     this.getStockCandles();
   }
 
@@ -95,4 +115,12 @@ export class StocksInfoComponent implements OnInit {
       }
   }
 
+}
+
+class ChartStockClanle {
+  l: number;
+  h: number;
+  o: number;
+  c: number;
+  date: Date
 }

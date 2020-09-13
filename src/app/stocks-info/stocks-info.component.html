@@ -22,20 +22,17 @@
                 </div>
                 <div class="filters-container__item">     
                     <span>Resolution</span>
-                    <dx-drop-down-box
-                        [(value)]="stockCandlesFilters.selectedResolution"
-                        [dataSource]="resolutions">
-                        <dx-list 
-                            [dataSource]="resolutions"
-                            selectionMode="single"
-                            (onSelectionChanged)="changeResolutionValue($event)">
-                        </dx-list>
-                    </dx-drop-down-box>
+                <dx-select-box
+                    [dataSource]="resolutions"
+                    displayExpr="key"
+                    valueExpr="value"
+                    [value]="stockCandlesFilters.selectedResolution"
+                    (onSelectionChanged)="changeResolutionValue($event)"></dx-select-box>
                 </div>
             </div>
             <dx-chart
                 id="chart"
-                title="Stock Price"
+                title="Stock Prices"
                 [dataSource]="stockCandlesList">
                 <dxi-series
                     name="{{selectedStock}}"
@@ -43,7 +40,6 @@
                     highValueField="h"
                     lowValueField="l"
                     closeValueField="c">
-                    <dxo-reduction color="red"></dxo-reduction>
                 </dxi-series>
                 <dxo-common-series-settings
                     argumentField="date"
@@ -74,7 +70,7 @@
     <div class="stocks-container__block">
         <dx-data-grid 
             id="gridContainer"
-            [dataSource]="stocks.items"
+            [dataSource]="stocks"
             [showBorders]="true"
             (onSelectionChanged)="onStockChanged($event)"
             [masterDetail]="{ enabled: true, template: 'detail' }"
@@ -94,7 +90,6 @@
                 [allowedPageSizes]="[10]"
                 [showNavigationButtons]="true">
             </dxo-pager>
-            <!-- <dxo-scrolling mode="infinite"></dxo-scrolling> -->
             <dxo-sorting mode="none"></dxo-sorting>
         </dx-data-grid>
     </div>

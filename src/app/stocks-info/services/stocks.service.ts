@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Stock } from '../models/stock';
+import { SotckProfile } from '../models/stock-profile';
+import { StockCandles } from '../models/stock-candles';
 
 @Injectable()
 export class StocksService {
@@ -11,11 +14,11 @@ export class StocksService {
 
   constructor(private http: HttpClient) { }
 
-  getStocks(): Observable<any> {
-    return this.http.get<any>(StocksService.URL_STOCK);
+  getStocks(): Observable<Stock[]> {
+    return this.http.get<Stock[]>(StocksService.URL_STOCK);
   }
 
-  getStockCandles(symbol: string, resolution: string | number, from_date: number, to_date: number): Observable<any> {
+  getStockCandles(symbol: string, resolution: string | number, from_date: number, to_date: number): Observable<StockCandles> {
     const params = {
       symbol: symbol,
       resolution: resolution.toString(),
@@ -23,15 +26,15 @@ export class StocksService {
       to: to_date.toString() 
     };
 
-    return this.http.get<any>(StocksService.URL_STOCK_CANDLES, {params: params});
+    return this.http.get<StockCandles>(StocksService.URL_STOCK_CANDLES, {params: params});
   }
 
-  getCompanyInfo(symbol: string): Observable<any> {
+  getCompanyInfo(symbol: string): Observable<SotckProfile> {
     const params = {
       symbol: symbol,
     };
 
-    return this.http.get<any>(StocksService.URL_STOCK_COMPANY_INFO, {params: params});
+    return this.http.get<SotckProfile>(StocksService.URL_STOCK_COMPANY_INFO, {params: params});
   }
 
 

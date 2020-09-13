@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { DxDataGridModule, DxChartModule, DxDateBoxModule, DxDropDownBoxModule, DxListModule, DxLoadIndicatorModule } from 'devextreme-angular';
+import { DxDataGridModule, DxChartModule, DxDateBoxModule, DxDropDownBoxModule, DxListModule, DxLoadIndicatorModule, DxSelectBoxModule, DxTemplateModule } from 'devextreme-angular';
 import { AppComponent } from './app.component';
 import { StocksInfoComponent } from './stocks-info/stocks-info.component';
 import { AuthFinnhubInterceptor } from './auth-finnhub.interceptor';
@@ -21,8 +21,8 @@ import { MasterDetailComponent } from './stocks-info/components/master-detail/ma
     DxDataGridModule,
     DxChartModule,
     DxDateBoxModule,
-    DxDropDownBoxModule,
-    DxListModule,
+    DxSelectBoxModule,
+    DxTemplateModule,
     DxLoadIndicatorModule
   ],
   providers: [
