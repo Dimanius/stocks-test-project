@@ -35,7 +35,7 @@
                 title="Stock Prices"
                 [dataSource]="stockCandlesList">
                 <dxi-series
-                    name="{{selectedStock}}"
+                    name="{{selectedStockSymbol}}"
                     openValueField="o"
                     highValueField="h"
                     lowValueField="l"
@@ -65,16 +65,34 @@
                 </dxo-tooltip>
             </dx-chart>
         </div>
-        <div class="stocks-container__sub-block"></div>
+        <div class="stocks-container__sub-block">
+            <div class="title">
+                Stock trades realtime
+            </div>  
+            <dx-data-grid 
+            id="gridContainer"
+            [dataSource]="stockRealtimeList"
+            [showBorders]="true"
+            >
+                <dxi-column dataField="symbol"></dxi-column>
+                <dxi-column dataField="price"></dxi-column>
+                <dxi-column dataField="value"></dxi-column>
+                <dxi-column dataField="date" dataType="datetime"></dxi-column>
+                <dxo-pager
+                    [showNavigationButtons]="true">
+                </dxo-pager>
+                <dxo-sorting mode="none"></dxo-sorting>
+            </dx-data-grid>
+        </div>
     </div>
     <div class="stocks-container__block">
         <dx-data-grid 
-            id="gridContainer"
-            [dataSource]="stocks"
-            [showBorders]="true"
-            (onSelectionChanged)="onStockChanged($event)"
-            [masterDetail]="{ enabled: true, template: 'detail' }"
-            >
+        id="gridContainer"
+        [dataSource]="stocks"
+        [showBorders]="true"
+        (onSelectionChanged)="onStockChanged($event)"
+        [masterDetail]="{ enabled: true, template: 'detail' }"
+        >
             <dxo-selection
                 mode="single">
             </dxo-selection>
@@ -87,7 +105,6 @@
             ></dxo-search-panel>
             <dxo-load-panel [enabled]="false"></dxo-load-panel>
             <dxo-pager
-                [allowedPageSizes]="[10]"
                 [showNavigationButtons]="true">
             </dxo-pager>
             <dxo-sorting mode="none"></dxo-sorting>

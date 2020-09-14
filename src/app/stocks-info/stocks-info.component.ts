@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { StocksService } from './services/stocks.service';
 import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
 import { Stock } from './models/stock';
+import { StockRealtime } from './models/stock-realtime';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-test-stocks-info',
@@ -38,9 +40,11 @@ export class StocksInfoComponent implements OnInit {
   }];
 
   public stocks: Stock[] = [];
-  public selectedStock: string = "None";
-  public stockCandlesList: ChartStockClanle[] = [];
+  public selectedStockSymbol: string = "None";
+  public stockCandlesList: ChartStockCandle[] = [];
   public stockCandlesFilters: any;
+  public stockRealtimeList: TradeStockRealtime[] = [];
+  public stockRealtime$: Subscription;
 
   constructor(
     private stocksService: StocksService, 
@@ -59,6 +63,19 @@ export class StocksInfoComponent implements OnInit {
         this.stocks = stocks;
         this.changeDetectionRef.detectChanges();
       });
+
+    this.stockRealtime$ = this.stocksService.stocktradesSubject$.asObservable().subscribe((data: StockRealtime[]) => {
+      this.stockRealtimeList = data.reverse().map((item) => {
+        const gridStockRealtime: TradeStockRealtime = {
+           date: new Date(item.t),
+           symbol: item.s,
+           price: item.p,
+           value: item.v 
+        }
+        return gridStockRealtime;
+      }).concat(this.stockRealtimeList);
+      this.changeDetectionRef.detectChanges();
+    })
   }
 
   customizeTooltip(arg: any): {text: string} {
@@ -70,10 +87,10 @@ export class StocksInfoComponent implements OnInit {
     };
   }
 
-  getStockCandles(): void {
-    if (this.selectedStock) {
+  updateStockCandles(): void {
+    if (this.selectedStockSymbol) {
       this.stocksService.getStockCandles(
-          this.selectedStock, 
+          this.selectedStockSymbol, 
           this.stockCandlesFilters.selectedResolution, 
           Math.floor(this.stockCandlesFilters.dateFrom / 1000), 
           Math.floor(this.stockCandlesFilters.dateTo / 1000)
@@ -81,7 +98,7 @@ export class StocksInfoComponent implements OnInit {
         .subscribe((stocks_candles) => {
           if (stocks_candles.s === StockCandlesStatusEnum.Ok) {
             this.stockCandlesList = stocks_candles.l.map((item, i) => {
-              const chartStockCandle: ChartStockClanle = {
+              const chartStockCandle: ChartStockCandle = {
                 l: stocks_candles.l[i],
                 h: stocks_candles.h[i],
                 o: stocks_candles.o[i],
@@ -100,27 +117,44 @@ export class StocksInfoComponent implements OnInit {
 
   changeResolutionValue(e: any): void {
     this.stockCandlesFilters.selectedResolution = e.selectedItem.value;
-    this.getStockCandles();
+    this.updateStockCandles();
   }
 
   onDateChanged(): void {
-    this.getStockCandles();
+    this.updateStockCandles();
   }
 
   onStockChanged(e: any): void {
     const rowData = e.selectedRowsData[0];
       if (rowData) {
-          this.selectedStock = rowData.symbol;
-          this.getStockCandles();
+          this.selectedStockSymbol = rowData.symbol;
+          this.updateStockCandles();
+          this.updateRealtimeStockTrades();
       }
+  }
+
+  updateRealtimeStockTrades(): void {
+    this.stockRealtimeList = [];
+    this.stocksService.getSymbolStockTrades(this.selectedStockSymbol);
+  }
+
+  ngOnDestroy() {
+    this.stockRealtime$.unsubscribe();
   }
 
 }
 
-class ChartStockClanle {
+class ChartStockCandle {
   l: number;
   h: number;
   o: number;
   c: number;
   date: Date
+}
+
+class TradeStockRealtime {
+  symbol: string;
+  price: number;
+  date: Date;
+  value: number;
 }
