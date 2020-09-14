@@ -78,9 +78,9 @@
                 <dxi-column dataField="price"></dxi-column>
                 <dxi-column dataField="value"></dxi-column>
                 <dxi-column dataField="date" dataType="datetime"></dxi-column>
-                <dxo-pager
-                    [showNavigationButtons]="true">
-                </dxo-pager>
+
+                <dxo-pager [showNavigationButtons]="true"></dxo-pager>
+                <dxo-paging [pageSize]="5"></dxo-paging>
                 <dxo-sorting mode="none"></dxo-sorting>
             </dx-data-grid>
         </div>

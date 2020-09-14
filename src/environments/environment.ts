@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  token: "bt9a4cv48v6sbe2ppnf0"
+  token: "bt9a4cv48v6sbe2ppnf0",
+  socketUrl: "wss://ws.finnhub.io",
 };
 
 /*

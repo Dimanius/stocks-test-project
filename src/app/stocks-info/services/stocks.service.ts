@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { Stock } from '../models/stock';
@@ -11,26 +11,25 @@ import { IWsMessage } from './interfaces/websocket.interfaces';
 const MESSAGE_TYPE_TRADE = "trade";
 
 @Injectable()
-export class StocksService {
+export class StocksService implements OnDestroy {
 
-  public stocktradesSubject$ = new Subject();
+  public stocktradesSubject = new Subject();
   
   private readonly URL_STOCK = "https://finnhub.io/api/v1/stock/symbol?exchange=US";
   private readonly URL_STOCK_CANDLES = "https://finnhub.io/api/v1/stock/candle";
   private readonly URL_STOCK_COMPANY_INFO = "https://finnhub.io/api/v1/stock/profile2";
-  private readonly URL_WS = "wss://ws.finnhub.io?token=";  
+  private readonly URL_WS = "?token=";  
   
-  private websocket$: WebSocketSubject<IWsMessage>;
+  private websocket: WebSocketSubject<IWsMessage>;
+  private websocketMessages$: Subscription;
   private currentSymbol: string = null;
 
   constructor(private http: HttpClient) {
-
-    this.websocket$ = new WebSocketSubject(this.URL_WS + environment.token);
-    
-    this.websocket$.asObservable().subscribe(
+    this.websocket = new WebSocketSubject(environment.socketUrl + `?token=${environment.token}`);
+    this.websocketMessages$ = this.websocket.asObservable().subscribe(
       (message) => { 
         if (message.type === MESSAGE_TYPE_TRADE) {
-          this.stocktradesSubject$.next(message.data); 
+          this.stocktradesSubject.next(message.data); 
         }
       },
       (err) => { console.log(err); }
@@ -67,17 +66,21 @@ export class StocksService {
     };
 
     if (!this.currentSymbol) {
-      this.websocket$.next(subscribeMessage);
+      this.websocket.next(subscribeMessage);
     } else {
       const unsubscribeMessage = {
         type: "unsubscribe",
         symbol: this.currentSymbol,
       };
 
-      this.websocket$.next(unsubscribeMessage);
-      this.websocket$.next(subscribeMessage);
+      this.websocket.next(unsubscribeMessage);
+      this.websocket.next(subscribeMessage);
     }
     this.currentSymbol = symbol;
+  }
+
+  ngOnDestroy(): void {
+    this.websocketMessages$.unsubscribe();
   }
 
 }

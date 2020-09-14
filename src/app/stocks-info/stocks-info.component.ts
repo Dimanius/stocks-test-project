@@ -53,9 +53,9 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.stockCandlesFilters = {
-      dateFrom: Date.now(),
+      dateFrom: Date.now() - 24 * 60 * 60 * 1000,
       dateTo: Date.now(),
-      selectedResolution: this.resolutions[5].value
+      selectedResolution: this.resolutions[0].value
     };
 
     this.stocksService.getStocks()
@@ -64,7 +64,7 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
         this.changeDetectionRef.detectChanges();
       });
 
-    this.stockRealtime$ = this.stocksService.stocktradesSubject$
+    this.stockRealtime$ = this.stocksService.stocktradesSubject
       .asObservable()
       .subscribe((data: StockRealtime[]) => {
         this.stockRealtimeList = data.reverse()
@@ -90,8 +90,31 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
             "Low: $" + arg.lowValue.toFixed(2) + "<br/>"
     };
   }
+  
+  onResolutionChanged(e: any): void {
+    this.stockCandlesFilters.selectedResolution = e.selectedItem.value;
+    this.updateStockCandles();
+  }
 
-  updateStockCandles(): void {
+  onDateChanged(): void {
+    this.updateStockCandles();
+  }
+
+  onStockChanged(e: any): void {
+    const rowData = e.selectedRowsData[0];
+      if (rowData) {
+          this.selectedStockSymbol = rowData.symbol;
+          this.updateStockCandles();
+          this.updateRealtimeStockTrades();
+      }
+  }
+
+  private updateRealtimeStockTrades(): void {
+    this.stockRealtimeList = [];
+    this.stocksService.getSymbolStockTrades(this.selectedStockSymbol);
+  }
+
+  private updateStockCandles(): void {
     if (this.selectedStockSymbol) {
       this.stocksService.getStockCandles(
           this.selectedStockSymbol, 
@@ -117,29 +140,6 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
           this.changeDetectionRef.detectChanges();
       })
     }
-  }
-
-  onResolutionChanged(e: any): void {
-    this.stockCandlesFilters.selectedResolution = e.selectedItem.value;
-    this.updateStockCandles();
-  }
-
-  onDateChanged(): void {
-    this.updateStockCandles();
-  }
-
-  onStockChanged(e: any): void {
-    const rowData = e.selectedRowsData[0];
-      if (rowData) {
-          this.selectedStockSymbol = rowData.symbol;
-          this.updateStockCandles();
-          this.updateRealtimeStockTrades();
-      }
-  }
-
-  updateRealtimeStockTrades(): void {
-    this.stockRealtimeList = [];
-    this.stocksService.getSymbolStockTrades(this.selectedStockSymbol);
   }
 
   ngOnDestroy() {
