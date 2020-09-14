@@ -1,15 +1,13 @@
 <div>{{symbol + " profile:"}}</div>
-<dx-data-grid *ngIf="profiles.length > 0; else loading" 
+<dx-data-grid *ngIf="profiles.length; else nodata" 
     [dataSource]="profiles"
     [showBorders]="true"
     [columnAutoWidth]="true">
     <dxo-sorting mode="none"></dxo-sorting>
 </dx-data-grid>
-<!-- <ng-template *ngIf="!isLoading; else loading" #nodata>
-    <span>no data</span>
-</ng-template>  -->
-<ng-template #loading>
-    <div class="loader-container">
+<ng-template #nodata>
+    <div *ngIf="isLoading" class="loader-container">
         <dx-load-indicator id="medium-indicator"></dx-load-indicator>
     </div>
+    <span *ngIf="!isLoading">no data</span>
 </ng-template> 
