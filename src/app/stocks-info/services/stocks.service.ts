@@ -7,7 +7,7 @@ import { StockCandles } from '../models/stock-candles';
 import { WebSocketSubject } from 'rxjs/webSocket';
 import { environment } from 'src/environments/environment';
 import { IWsMessage } from './interfaces/websocket.interfaces';
-import { StockTrade } from '../models/stock-realtime';
+import { StockTrade } from '../models/stock-trade';
 
 const MESSAGE_TYPE_TRADE = "trade";
 
@@ -18,17 +18,17 @@ export class StocksService implements OnDestroy {
   private readonly URL_STOCK_CANDLES = "https://finnhub.io/api/v1/stock/candle";
   private readonly URL_STOCK_COMPANY_INFO = "https://finnhub.io/api/v1/stock/profile2";
   
-  private websocket: WebSocketSubject<IWsMessage>;
-  private websocketMessages$: Subscription;
-  private stocktradesSubject = new Subject<StockTrade[]>();
+  private websocket$: WebSocketSubject<IWsMessage>;
+  private websocketMessages: Subscription;
+  private stocktradesSubject$ = new Subject<StockTrade[]>();
   private currentSymbol: string = null;
 
   constructor(private http: HttpClient) {
-    this.websocket = new WebSocketSubject(environment.socketUrl + `?token=${environment.token}`);
-    this.websocketMessages$ = this.websocket.asObservable().subscribe(
+    this.websocket$ = new WebSocketSubject(environment.socketUrl + `?token=${environment.token}`);
+    this.websocketMessages = this.websocket$.asObservable().subscribe(
       (message) => { 
         if (message.type === MESSAGE_TYPE_TRADE) {
-          this.stocktradesSubject.next(message.data); 
+          this.stocktradesSubject$.next(message.data); 
         }
       },
       (err) => { console.log(err); }
@@ -65,25 +65,25 @@ export class StocksService implements OnDestroy {
     };
 
     if (!this.currentSymbol) {
-      this.websocket.next(subscribeMessage);
+      this.websocket$.next(subscribeMessage);
     } else {
       const unsubscribeMessage = {
         type: "unsubscribe",
         symbol: this.currentSymbol,
       };
 
-      this.websocket.next(unsubscribeMessage);
-      this.websocket.next(subscribeMessage);
+      this.websocket$.next(unsubscribeMessage);
+      this.websocket$.next(subscribeMessage);
     }
     this.currentSymbol = symbol;
   }
 
   getStocktrades(): Observable<StockTrade[]> {
-    return this.stocktradesSubject.asObservable();
+    return this.stocktradesSubject$.asObservable();
   }
 
   ngOnDestroy(): void {
-    this.websocketMessages$.unsubscribe();
+    this.websocketMessages.unsubscribe();
   }
 
 }

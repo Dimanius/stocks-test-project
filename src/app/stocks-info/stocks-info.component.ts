@@ -44,7 +44,7 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
   public stockCandlesList: ChartStockCandle[] = [];
   public stockCandlesFilters: any;
   public stockTradesList: GridTradeStock[] = [];
-  public stockRealtime$: Subscription;
+  public stockRealtime: Subscription;
 
   constructor(
     private stocksService: StocksService, 
@@ -64,7 +64,7 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
         this.changeDetectionRef.detectChanges();
       });
 
-    this.stockRealtime$ = this.stocksService.getStocktrades()
+    this.stockRealtime = this.stocksService.getStocktrades()
       .subscribe((data: StockTrade[]) => {
         this.stockTradesList = data.reverse()
           .map((item) => {
@@ -142,7 +142,7 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stockRealtime$.unsubscribe();
+    this.stockRealtime.unsubscribe();
   }
 }
 
