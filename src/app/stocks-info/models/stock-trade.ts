@@ -1,4 +1,4 @@
-export class StockRealtime {
+export class StockTrade {
     s: string;
     p: number;
     t: number;

@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestro
 import { StocksService } from './services/stocks.service';
 import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
 import { Stock } from './models/stock';
-import { StockRealtime } from './models/stock-realtime';
+import { StockTrade } from './models/stock-trade';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -39,11 +39,11 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
     value: "M"
   }];
 
-  public stocks: Stock[] = [];
+  public stockList: Stock[] = [];
   public selectedStockSymbol: string = "None";
   public stockCandlesList: ChartStockCandle[] = [];
   public stockCandlesFilters: any;
-  public stockRealtimeList: TradeStockRealtime[] = [];
+  public stockTradesList: GridTradeStock[] = [];
   public stockRealtime$: Subscription;
 
   constructor(
@@ -60,16 +60,15 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
 
     this.stocksService.getStocks()
       .subscribe((stocks) => {
-        this.stocks = stocks;
+        this.stockList = stocks;
         this.changeDetectionRef.detectChanges();
       });
 
-    this.stockRealtime$ = this.stocksService.stocktradesSubject
-      .asObservable()
-      .subscribe((data: StockRealtime[]) => {
-        this.stockRealtimeList = data.reverse()
+    this.stockRealtime$ = this.stocksService.getStocktrades()
+      .subscribe((data: StockTrade[]) => {
+        this.stockTradesList = data.reverse()
           .map((item) => {
-            const gridStockRealtime: TradeStockRealtime = {
+            const gridStockRealtime: GridTradeStock = {
               symbol: item.s,
               price: item.p,
               date: new Date(item.t),
@@ -77,7 +76,7 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
             };
 
             return gridStockRealtime;
-          }).concat(this.stockRealtimeList);
+          }).concat(this.stockTradesList);
         this.changeDetectionRef.detectChanges();
       });
   }
@@ -110,8 +109,8 @@ export class StocksInfoComponent implements OnInit, OnDestroy {
   }
 
   private updateRealtimeStockTrades(): void {
-    this.stockRealtimeList = [];
-    this.stocksService.getSymbolStockTrades(this.selectedStockSymbol);
+    this.stockTradesList = [];
+    this.stocksService.setSymbolStockTrades(this.selectedStockSymbol);
   }
 
   private updateStockCandles(): void {
@@ -155,7 +154,7 @@ class ChartStockCandle {
   date: Date
 }
 
-class TradeStockRealtime {
+class GridTradeStock {
   symbol: string;
   price: number;
   date: Date;

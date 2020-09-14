@@ -7,21 +7,20 @@ import { StockCandles } from '../models/stock-candles';
 import { WebSocketSubject } from 'rxjs/webSocket';
 import { environment } from 'src/environments/environment';
 import { IWsMessage } from './interfaces/websocket.interfaces';
+import { StockTrade } from '../models/stock-realtime';
 
 const MESSAGE_TYPE_TRADE = "trade";
 
 @Injectable()
 export class StocksService implements OnDestroy {
 
-  public stocktradesSubject = new Subject();
-  
   private readonly URL_STOCK = "https://finnhub.io/api/v1/stock/symbol?exchange=US";
   private readonly URL_STOCK_CANDLES = "https://finnhub.io/api/v1/stock/candle";
   private readonly URL_STOCK_COMPANY_INFO = "https://finnhub.io/api/v1/stock/profile2";
-  private readonly URL_WS = "?token=";  
   
   private websocket: WebSocketSubject<IWsMessage>;
   private websocketMessages$: Subscription;
+  private stocktradesSubject = new Subject<StockTrade[]>();
   private currentSymbol: string = null;
 
   constructor(private http: HttpClient) {
@@ -59,7 +58,7 @@ export class StocksService implements OnDestroy {
     return this.http.get<SotckProfile>(this.URL_STOCK_COMPANY_INFO, {params: params});
   }
 
-  getSymbolStockTrades(symbol: string): void {
+  setSymbolStockTrades(symbol: string): void {
     const subscribeMessage = {
       type: "subscribe",
       symbol: symbol,
@@ -77,6 +76,10 @@ export class StocksService implements OnDestroy {
       this.websocket.next(subscribeMessage);
     }
     this.currentSymbol = symbol;
+  }
+
+  getStocktrades(): Observable<StockTrade[]> {
+    return this.stocktradesSubject.asObservable();
   }
 
   ngOnDestroy(): void {

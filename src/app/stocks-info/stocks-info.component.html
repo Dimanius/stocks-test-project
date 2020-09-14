@@ -70,9 +70,9 @@
                 Stock trades realtime
             </div>  
             <dx-data-grid 
-            id="gridContainer"
-            [dataSource]="stockRealtimeList"
-            [showBorders]="true"
+                id="gridContainer"
+                [dataSource]="stockTradesList"
+                [showBorders]="true"
             >
                 <dxi-column dataField="symbol"></dxi-column>
                 <dxi-column dataField="price"></dxi-column>
@@ -87,11 +87,11 @@
     </div>
     <div class="stocks-container__block">
         <dx-data-grid 
-        id="gridContainer"
-        [dataSource]="stocks"
-        [showBorders]="true"
-        (onSelectionChanged)="onStockChanged($event)"
-        [masterDetail]="{ enabled: true, template: 'detail' }"
+            id="gridContainer"
+            [dataSource]="stockList"
+            [showBorders]="true"
+            (onSelectionChanged)="onStockChanged($event)"
+            [masterDetail]="{ enabled: true, template: 'detail' }"
         >
             <dxo-selection
                 mode="single">
