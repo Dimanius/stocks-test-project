@@ -6,6 +6,7 @@ import {
   HttpInterceptor
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class AuthFinnhubInterceptor implements HttpInterceptor {
@@ -18,7 +19,7 @@ export class AuthFinnhubInterceptor implements HttpInterceptor {
     if (this.isFinnhubHost(request)) {
       request = request.clone({
         setParams: {
-          token: "bt9a4cv48v6sbe2ppnf0"
+          token: environment.token
       }});
     }
     return next.handle(request);
