@@ -6,6 +6,7 @@ import { SotckProfile } from '../models/stock-profile';
 import { StockCandles } from '../models/stock-candles';
 import { WebSocketSubject } from 'rxjs/webSocket';
 import { environment } from 'src/environments/environment';
+import { IWsMessage } from './interfaces/websocket.interfaces';
 
 const MESSAGE_TYPE_TRADE = "trade";
 
@@ -19,9 +20,8 @@ export class StocksService {
   private readonly URL_STOCK_COMPANY_INFO = "https://finnhub.io/api/v1/stock/profile2";
   private readonly URL_WS = "wss://ws.finnhub.io?token=";  
   
-  private websocket$: WebSocketSubject<any>;
+  private websocket$: WebSocketSubject<IWsMessage>;
   private currentSymbol: string = null;
-
 
   constructor(private http: HttpClient) {
 
@@ -34,7 +34,7 @@ export class StocksService {
         }
       },
       (err) => { console.log(err); }
-    )
+    );
   }
 
   getStocks(): Observable<Stock[]> {
@@ -64,18 +64,18 @@ export class StocksService {
     const subscribeMessage = {
       type: "subscribe",
       symbol: symbol,
-    }
-
-    const unsubscribeMessage = {
-      type: "unsubscribe",
-      symbol: this.currentSymbol,
-    }
+    };
 
     if (!this.currentSymbol) {
-      this.websocket$.next(subscribeMessage)
+      this.websocket$.next(subscribeMessage);
     } else {
-      this.websocket$.next(unsubscribeMessage)
-      this.websocket$.next(subscribeMessage)
+      const unsubscribeMessage = {
+        type: "unsubscribe",
+        symbol: this.currentSymbol,
+      };
+
+      this.websocket$.next(unsubscribeMessage);
+      this.websocket$.next(subscribeMessage);
     }
     this.currentSymbol = symbol;
   }

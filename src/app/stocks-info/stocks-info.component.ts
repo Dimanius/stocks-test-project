@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { StocksService } from './services/stocks.service';
 import { StockCandlesStatusEnum } from './enums/stock-candles-status.enum';
 import { Stock } from './models/stock';
@@ -11,9 +11,9 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./stocks-info.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StocksInfoComponent implements OnInit {
+export class StocksInfoComponent implements OnInit, OnDestroy {
 
-  public readonly resolutions: {key: string, value: (string | number)}[] = [{
+  public readonly resolutions: { key: string, value: (string | number) }[] = [{
     key: "1 minute",
     value: 1
   },{
@@ -64,18 +64,22 @@ export class StocksInfoComponent implements OnInit {
         this.changeDetectionRef.detectChanges();
       });
 
-    this.stockRealtime$ = this.stocksService.stocktradesSubject$.asObservable().subscribe((data: StockRealtime[]) => {
-      this.stockRealtimeList = data.reverse().map((item) => {
-        const gridStockRealtime: TradeStockRealtime = {
-           date: new Date(item.t),
-           symbol: item.s,
-           price: item.p,
-           value: item.v 
-        }
-        return gridStockRealtime;
-      }).concat(this.stockRealtimeList);
-      this.changeDetectionRef.detectChanges();
-    })
+    this.stockRealtime$ = this.stocksService.stocktradesSubject$
+      .asObservable()
+      .subscribe((data: StockRealtime[]) => {
+        this.stockRealtimeList = data.reverse()
+          .map((item) => {
+            const gridStockRealtime: TradeStockRealtime = {
+              symbol: item.s,
+              price: item.p,
+              date: new Date(item.t),
+              value: item.v 
+            };
+
+            return gridStockRealtime;
+          }).concat(this.stockRealtimeList);
+        this.changeDetectionRef.detectChanges();
+      });
   }
 
   customizeTooltip(arg: any): {text: string} {
@@ -115,7 +119,7 @@ export class StocksInfoComponent implements OnInit {
     }
   }
 
-  changeResolutionValue(e: any): void {
+  onResolutionChanged(e: any): void {
     this.stockCandlesFilters.selectedResolution = e.selectedItem.value;
     this.updateStockCandles();
   }
@@ -141,7 +145,6 @@ export class StocksInfoComponent implements OnInit {
   ngOnDestroy() {
     this.stockRealtime$.unsubscribe();
   }
-
 }
 
 class ChartStockCandle {
